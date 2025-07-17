@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  database:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: cropio_test_task_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  web:
+    build: .
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails server -b '0.0.0.0' -p 3000"
+    volumes:
+      - .:/app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - database
+      - migrate
+    environment:
+      RAILS_ENV: development
+      DATABASE_URL: postgis://postgres:password@database:5432/cropio_test_task_db
+
+  migrate:
+    build: .
+    command: bundle exec rails db:migrate
+    volumes:
+      - .:/app
+    depends_on:
+      - database
+    environment:
+      RAILS_ENV: development
+      DATABASE_URL: postgis://postgres:password@database:5432/cropio_test_task_db
+
+volumes:
+  db_data:
