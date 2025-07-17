@@ -1,0 +1,57 @@
+<div class="container-fluid mt-4">
+  <div class="row">
+    <div class="col-lg-6 col-md-12 mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>Fields</h1>
+        <%= link_to 'Create Field', new_field_path, class: 'btn btn-primary' %>
+      </div>
+
+      <% if @fields.present? %>
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Area (ha)</th>
+                <th scope="col" class="text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @fields.each do |field| %>
+                <tr>
+                  <td><%= link_to field.name, field %></td>
+                  <td><%= field.area.round(2) %></td>
+                  <td class="d-flex justify-content-center align-items-center">
+                    <%= link_to 'Edit', edit_field_path(field), class: 'btn btn-secondary btn-sm mr-2' %>
+                    <%= form_with url: field_path(field), method: :delete, local: true, class: "d-inline" do %>
+                      <%= button_tag 'Delete', type: 'submit', class: 'btn btn-danger btn-sm', data: { confirm: 'Are you sure?' } %>
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+        <% else %>
+          <p>No fields available. <%= link_to 'Create a new field', new_field_path %></p>
+      <% end %>
+    </div>
+
+    <div class="col-lg-6 col-md-12">
+      <div id="map" style="height: 800px;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var map = L.map('map').setView([50.4501, 30.5234], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    <% @fields.each do |field| %>
+      L.geoJSON(<%= field.as_geojson.html_safe %>).addTo(map);
+    <% end %>
+  });
+</script>
