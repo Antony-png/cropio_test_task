@@ -12,12 +12,16 @@ class Field < ApplicationRecord
     self.area = area_m2.to_f / 10_000.0
   end
 
-  def shape_geojson
-    RGeo::GeoJSON.encode(shape)
+  def as_geojson
+    GeometryConverter::ToGeoJSON.new(self.shape).call
   end
 
-  def as_geojson
-    RGeo::GeoJSON.encode(self.shape).to_json
+  def as_leaflet_geojson
+    GeometryConverter::ToGeoJSON.new(self.shape).call
+  end
+
+  def as_leaflet_polygons
+    GeometryConverter::ToLeafletPolygons.new(self.shape).call
   end
 
   def process_shape(params)

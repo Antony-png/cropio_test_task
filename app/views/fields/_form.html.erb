@@ -11,7 +11,7 @@
     <%= form_with(model: field, local: true) do |form| %>
       <% if field.errors.any? %>
         <div>
-          <h2><%= pluralize(field.errors.count, "error") %> prohibited this field from being saved:</h2>
+          <h2><%= pluralize(field.errors.count, "error") %> error saving this field:</h2>
           <ul>
             <% field.errors.full_messages.each do |message| %>
               <li><%= message %></li>
@@ -53,23 +53,33 @@
           draw: {
             polygon: true,
             polyline: false,
-            rectangle: false,
+            rectangle: true,
             circle: false,
             marker: false,
             circlemarker: false
           },
           edit: {
-            featureGroup: drawnItems
+            featureGroup: drawnItems,
+            remove: true
           }
         });
         map.addControl(drawControl);
 
         <% if field.shape.present? %>
-          const geojson = <%= field.as_geojson.html_safe %>;
-          L.geoJSON(geojson).eachLayer(function(layer) {
-            drawnItems.addLayer(layer);
-          });
-          map.fitBounds(drawnItems.getBounds());
+          try {
+            const polygons = <%= field.as_leaflet_polygons.to_json.html_safe %>;
+            
+            polygons.forEach(function(latlngs) {
+              const leafletPolygon = L.polygon(latlngs);
+              drawnItems.addLayer(leafletPolygon);
+            });
+            
+            if (drawnItems.getLayers().length > 0) {
+              map.fitBounds(drawnItems.getBounds());
+            }
+          } catch (error) {
+            console.error('Error loading field shape:', error);
+          }
         <% end %>
 
         map.on(L.Draw.Event.CREATED, function(event) {
@@ -82,13 +92,37 @@
           updateGeoJSON();
         });
 
+        map.on(L.Draw.Event.EDITSTOP, function(event) {
+          updateGeoJSON();
+        });
+
+        map.on(L.Draw.Event.EDITRESIZE, function(event) {
+          updateGeoJSON();
+        });
+
+        map.on(L.Draw.Event.EDITMOVE, function(event) {
+          updateGeoJSON();
+        });
+
+        map.on(L.Draw.Event.EDITVERTEX, function(event) {
+          updateGeoJSON();
+        });
+
         map.on(L.Draw.Event.DELETED, function(event) {
           updateGeoJSON();
         });
 
         function updateGeoJSON() {
-          const geojson = drawnItems.toGeoJSON();
-          document.getElementById('shape_geojson').value = JSON.stringify(geojson);
+          try {
+            const geojson = drawnItems.toGeoJSON();
+            if (geojson && geojson.features && geojson.features.length > 0) {
+              document.getElementById('shape_geojson').value = JSON.stringify(geojson);
+            } else {
+              document.getElementById('shape_geojson').value = '';
+            }
+          } catch (error) {
+            console.error('Error updating GeoJSON:', error);
+          }
         }
 
         const form = document.querySelector('form');
