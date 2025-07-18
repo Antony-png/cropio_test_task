@@ -16,10 +16,6 @@ class Field < ApplicationRecord
     GeometryConverter::ToGeoJSON.new(self.shape).call
   end
 
-  def as_leaflet_geojson
-    GeometryConverter::ToGeoJSON.new(self.shape).call
-  end
-
   def as_leaflet_polygons
     GeometryConverter::ToLeafletPolygons.new(self.shape).call
   end
