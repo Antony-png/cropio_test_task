@@ -1,18 +1,20 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 def build_geojson_polygon(coordinates)
   {
-    type: "Polygon",
+    type: 'Polygon',
     properties: {},
     geometry: {
-      type: "Polygon",
+      type: 'Polygon',
       coordinates: [coordinates]
     }
   }
 end
 
-describe "Fields", type: :request do
-  let(:name) { "Test Field" }
+describe 'Fields', type: :request do
+  let(:name) { 'Test Field' }
 
   let(:polygon_1) do
     [
@@ -36,7 +38,7 @@ describe "Fields", type: :request do
 
   let(:multipolygon_geojson) do
     {
-      type: "MultiPolygon",
+      type: 'MultiPolygon',
       coordinates: [
         [polygon_1],
         [polygon_2]
@@ -64,15 +66,15 @@ describe "Fields", type: :request do
       expect(field.name).to eq(name)
       expect(field.shape).to be_a(RGeo::Feature::MultiPolygon)
       expect(field.shape.geometries.size).to eq(2)
-      expect(field.area).to be_within(0.001).of(18922.25)
+      expect(field.area).to be_within(0.001).of(18_922.25)
       expect(field.shape.geometries[0].coordinates).to eq([polygon_1])
       expect(field.shape.geometries[1].coordinates).to eq([polygon_2])
     end
   end
 
   describe 'PUT /fields/:id' do
-    let(:field) { Field.create!(name: "Old Field", shape: RGeo::GeoJSON.decode(multipolygon_geojson)) }
-    let(:updated_name) { "Updated Field" }
+    let(:field) { Field.create!(name: 'Old Field', shape: RGeo::GeoJSON.decode(multipolygon_geojson)) }
+    let(:updated_name) { 'Updated Field' }
 
     context 'when updating only a name' do
       let(:updated_params) do
@@ -83,7 +85,8 @@ describe "Fields", type: :request do
       end
 
       subject do
-        put "/fields/#{field.id}", params: updated_params.to_json, headers: { 'Content-Type': 'application/json' }
+        put "/fields/#{field.id}", params: updated_params.to_json,
+                                   headers: { 'Content-Type': 'application/json' }
       end
 
       it 'updates only the name' do
@@ -92,7 +95,7 @@ describe "Fields", type: :request do
         updated_field = field.reload
 
         expect(updated_field.name).to eq(updated_name)
-        expect(updated_field.area).to be_within(0.01).of(18922.25)
+        expect(updated_field.area).to be_within(0.01).of(18_922.25)
         expect(field.shape.geometries.size).to eq(2)
         expect(updated_field.shape.geometries[0].coordinates).to eq([polygon_1])
         expect(updated_field.shape.geometries[1].coordinates).to eq([polygon_2])
@@ -112,7 +115,7 @@ describe "Fields", type: :request do
 
       let(:updated_multipolygon_geojson) do
         {
-          type: "MultiPolygon",
+          type: 'MultiPolygon',
           coordinates: [
             [polygon_1],
             [polygon_2],
@@ -129,7 +132,8 @@ describe "Fields", type: :request do
       end
 
       subject do
-        put "/fields/#{field.id}", params: updated_params.to_json, headers: { 'Content-Type': 'application/json' }
+        put "/fields/#{field.id}", params: updated_params.to_json,
+                                   headers: { 'Content-Type': 'application/json' }
       end
 
       it 'updates only the shape' do
@@ -141,7 +145,7 @@ describe "Fields", type: :request do
         expect(updated_field.name).to eq('Old Field')
         expect(updated_field.shape).to be_a(RGeo::Feature::MultiPolygon)
         expect(updated_field.shape.geometries.size).to eq(3)
-        expect(updated_field.area).to be_within(0.01).of(28342.12)
+        expect(updated_field.area).to be_within(0.01).of(28_342.12)
       end
     end
   end

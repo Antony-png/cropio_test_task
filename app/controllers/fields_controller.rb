@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 class FieldsController < ApplicationController
   skip_before_action :verify_authenticity_token
 
-  before_action :set_field, only: [:show, :edit, :destroy]
+  before_action :set_field, only: %i[show edit update destroy]
 
   def index
     @fields = Field.all
@@ -23,7 +25,7 @@ class FieldsController < ApplicationController
     @field = Field.new(field_params.except(:shape))
 
     begin
-      result = Fields::Create.new(@field, field_params).call
+      result = Fields::ProcessField.new(@field, field_params).call
       if result
         redirect_to @field, notice: 'Field was successfully created.'
       else
@@ -35,8 +37,7 @@ class FieldsController < ApplicationController
   end
 
   def update
-    @field = Field.find_by(id: params[:id])
-    result = Fields::Update.new(@field, field_params).call
+    result = Fields::ProcessField.new(@field, field_params).call
     if result
       redirect_to @field, notice: 'Field was successfully updated.'
     else
@@ -52,7 +53,7 @@ class FieldsController < ApplicationController
   private
 
   def field_params
-    params.require(:field).permit(:name, :shape)
+    params.expect(field: %i[name shape])
   end
 
   def set_field

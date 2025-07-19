@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module GeometryConverter
   class ToLeafletPolygons
     def initialize(shape)
@@ -5,7 +7,7 @@ module GeometryConverter
     end
 
     def call
-      return [] unless @shape.present?
+      return [] if @shape.blank?
 
       geojson = RGeo::GeoJSON.encode(@shape)
       polygons = []
@@ -31,7 +33,8 @@ module GeometryConverter
     end
 
     def call
-      return nil unless @shape.present?
+      return nil if @shape.blank?
+
       RGeo::GeoJSON.encode(@shape).to_json
     end
   end
