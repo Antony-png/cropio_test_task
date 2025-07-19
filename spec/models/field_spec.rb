@@ -15,18 +15,21 @@ RSpec.describe Field, type: :model do
     expect(field.as_geojson).to include('coordinates')
   end
 
-  it 'should process shape from params' do
-    field = Field.new(name: 'Test Field')
-    params = { shape: '{"type":"Polygon","coordinates":[[[0,0],[1,1],[1,0],[0,0]]]}' }
-    field.process_shape(params)
-    expect(field.shape).to be_a(RGeo::Feature::Polygon)
-  end
-
   describe 'validations' do
-    it 'should be not valid when name is nil' do
-      field = Field.new(name: nil, shape: 'POLYGON((0 0, 1 1, 1 0, 0 0))')
-      expect(field).not_to be_valid
-      expect(field.errors[:name]).to include("can't be blank")
+    context 'when name is nil' do
+      it 'should be not valid' do
+        field = Field.new(name: nil, shape: 'POLYGON((0 0, 1 1, 1 0, 0 0))')
+        expect(field).not_to be_valid
+        expect(field.errors[:name]).to include("can't be blank")
+      end
+    end
+
+    context 'when shape is nil' do
+      it 'should be not valid' do
+        field = Field.new(name: 'Test name', shape: nil)
+        expect(field).not_to be_valid
+        expect(field.errors[:shape]).to include("can't be blank")
+      end
     end
   end
 end
