@@ -53,7 +53,7 @@
           draw: {
             polygon: true,
             polyline: false,
-            rectangle: true,
+            rectangle: false,
             circle: false,
             marker: false,
             circlemarker: false
@@ -68,12 +68,12 @@
         <% if field.shape.present? %>
           try {
             const polygons = <%= field.as_leaflet_polygons.to_json.html_safe %>;
-            
+
             polygons.forEach(function(latlngs) {
               const leafletPolygon = L.polygon(latlngs);
               drawnItems.addLayer(leafletPolygon);
             });
-            
+
             if (drawnItems.getLayers().length > 0) {
               map.fitBounds(drawnItems.getBounds());
             }
